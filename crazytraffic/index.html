@@ -119,8 +119,8 @@
        
        var clouds=[];
        var crashEffects=[];
-       var carsLeft=new number(CANVAS_WIDTH-160,30,TOTALCARS,"Cars Left: ","#085fd5","carsLeft");
-       var timeLeft=new number(CANVAS_WIDTH-160,60,TOTALTIME,"Time Left: ","#085fd5","timeLeft");
+       var carsLeft=new number(CANVAS_WIDTH-160,30,TOTALCARS,"Cars Left: ","#3e455a","carsLeft");
+       var timeLeft=new number(CANVAS_WIDTH-160,60,TOTALTIME,"Time Left: ","#3e455a","timeLeft");
        //var welcome=new number(CANVAS_WIDTH-650,90,0,"Time Left: ","#017890","timeLeft");
            timeLeft.update=function(){
         this.count=(this.count+1)%10;
@@ -1656,7 +1656,7 @@
                   canvas.save();
            canvas.font="Bold 20px Georgia";
            canvas.textAlign="left";
-           canvas.fillStyle="#085fd5";
+           canvas.fillStyle="#3e455a";
               canvas.fillText("Welcome "+username +"!",CANVAS_WIDTH-650,30);
               canvas.fillText(gameLevel,CANVAS_WIDTH-650,60);
               canvas.restore();
