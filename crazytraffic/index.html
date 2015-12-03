@@ -22,12 +22,14 @@
     }
 
     #username{
+      background-color: #f0cd29;
       position: absolute;
       top:505px;
       left:392px;
       font-size: 2em;
-      opacity:0.5;
+      //opacity:0.5;
       display:none;
+      border:3px solid #3e455a;
 
     }
     </style>
@@ -52,6 +54,7 @@
         var ACCELERATION=0.7;
 
         var TOTALTIME=20*FPS;
+        var TOTALCARS=10;
 
         var ERR=5;
 
@@ -91,6 +94,9 @@
         var carstart = $('<audio />').get(0);
         var carstart2 = $('<audio />').get(0);
 
+             var ambulance= $('<audio />').get(0);
+        var fire= $('<audio />').get(0);
+
 
         click.src = "sounds/click.mp3";
         music.src = "sounds/background.mp3";
@@ -100,13 +106,20 @@
         carstart2.src = "sounds/carstart2.wav";
 
 
+        ambulance.src = "sounds/ambulance.mp3";
+        fire.src = "sounds/firetruck.mp3";
+
+
+
+
 
         var menuBackgroundSprite=Sprite("background");
         var gameBackgroundSprite=Sprite("gamebackground");
+        var gameBackgroundSprite2=Sprite("gamebackground98");
        
        var clouds=[];
        var crashEffects=[];
-       var carsLeft=new number(CANVAS_WIDTH-160,30,5,"Cars Left: ","#085fd5","carsLeft");
+       var carsLeft=new number(CANVAS_WIDTH-160,30,TOTALCARS,"Cars Left: ","#085fd5","carsLeft");
        var timeLeft=new number(CANVAS_WIDTH-160,60,TOTALTIME,"Time Left: ","#085fd5","timeLeft");
        //var welcome=new number(CANVAS_WIDTH-650,90,0,"Time Left: ","#017890","timeLeft");
            timeLeft.update=function(){
@@ -318,6 +331,7 @@
       }
 
      function startGame(level){
+             backhomeButton.sprite=sprites["backhome"];
              gameLevel=level;           
                 music.currentTime=0;
                 music.play();
@@ -408,6 +422,19 @@
              
              this.sprite=sprites[this.name];
               startGame("level1");
+                 for(var i=0;i<gameRecord.length;i++){
+                if(gameRecord[i]["name"]==username)
+                   break;
+              }
+              if(i==gameRecord.length){
+                         gameRecord[i]={};
+                         gameRecord[i]["name"]=username;
+                        //gameRecord[i]["level1"]=(TOTALTIME-timeLeft.number)/FPS;
+                        //gameRecord[i]["level1"]=gameRecord[i]["level1"].toFixed(2);
+               }
+
+               localStorage.setItem("gameRecord",JSON.stringify(gameRecord));
+
           }
 
 
@@ -431,7 +458,7 @@
               
              for(var i=0; i<gameRecord.length;i++){
                      var min={};
-                     var mindex=0;
+                     var mindex=i;
                      console.info(gameRecord.length);
                for(var j=i; j<gameRecord.length;j++){
                   if(lessThan(gameRecord[j],min)){
@@ -521,6 +548,8 @@
                 crash.volume=0;
                 carstart.volume=0;
                 carstart2.volume=0;
+                fire.volume=0;
+                ambulance.volume=0;
                 ifSounds=false;
                 this.name="sounds";
                 this.sprite=sprites["sounds-pressed"];
@@ -528,8 +557,10 @@
               else{
                   music.volume=1;
                  crash.volume=1;
-                carstart.volume=0;
-                carstart2.volume=0;
+                carstart.volume=1;
+                carstart2.volume=1;
+                 fire.volume=1;
+                ambulance.volume=1;
                  ifSounds=true;
                 this.name="nosounds";
                 this.sprite=sprites["nosounds-pressed"];
@@ -823,11 +854,14 @@
                   if(number==6){
                    newcar.carType="amb";
                    newcar.sprite=carsprites["car6b0"];
+                   ambulance.play();
 
                   }
                 if(number==14){
                    newcar.carType="fire";
                    newcar.sprite=carsprites["car14b0"];
+                    fire.play();
+
                  }
 
                  // newcar.index=this.cars.length;
@@ -1156,7 +1190,7 @@
           I.wait= function(section){
             if(I.carType=="amb" || I.carType=="fire"){
               I.waitTime++;
-              if(I.waitTime==4*FPS)
+              if(I.waitTime==3*FPS)
                  gameState="lose";
             }
             //var ifstart=true;
@@ -1321,7 +1355,21 @@
 
       $("#username").bind("keyup", "return", function() { 
           startGame("level1");
+          for(var i=0;i<gameRecord.length;i++){
+                if(gameRecord[i]["name"]==username)
+                   break;
+              }
+              if(i==gameRecord.length){
+                         gameRecord[i]={};
+                         gameRecord[i]["name"]=username;
+                        //gameRecord[i]["level1"]=(TOTALTIME-timeLeft.number)/FPS;
+                        //gameRecord[i]["level1"]=gameRecord[i]["level1"].toFixed(2);
+               }
+
+               localStorage.setItem("gameRecord",JSON.stringify(gameRecord));
        });
+
+
       
        canvasElement[0].onmouseup=function(event){
           var rect=canvasElement[0].getBoundingClientRect();
@@ -1379,7 +1427,10 @@
           //mapSprite.draw(canvas, 0, 0,CANVAS_WIDTH, CANVAS_HEIGHT);
          // canvas.fillStyle = 'green';
           //canvas.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-         gameBackgroundSprite.draw(canvas,0,0,CANVAS_WIDTH,CANVAS_HEIGHT);
+          if(gameLevel=="level1")
+             gameBackgroundSprite.draw(canvas,0,0,CANVAS_WIDTH,CANVAS_HEIGHT);
+          else
+             gameBackgroundSprite2.draw(canvas,0,0,CANVAS_WIDTH,CANVAS_HEIGHT);
           for(var i=0;i<=8;i++){
             roadSections[i].draw();
           }
@@ -1541,8 +1592,9 @@
                    gameState="win";
                    for(var i=0;i<gameRecord.length;i++){
                       if(gameRecord[i]["name"]==username){
+                           if(!gameRecord[i]["level1"] || gameRecord[i]["level1"]>(TOTALTIME-timeLeft.number)/FPS){
                            gameRecord[i]["level1"]=(TOTALTIME-timeLeft.number)/FPS;
-                           gameRecord[i]["level1"]=gameRecord[i]["level1"].toFixed(2);
+                           gameRecord[i]["level1"]=gameRecord[i]["level1"].toFixed(2);}
                            break;
                       }
                     }
@@ -1576,7 +1628,7 @@
                canvas.textAlign="left";
                canvas.fillStyle="#d93d1f";
                if(gameState=="lose")
-                canvas.fillText("Level Failed",CANVAS_WIDTH/2-235,CANVAS_HEIGHT/2-25);
+                canvas.fillText("Level Failed!",CANVAS_WIDTH/2-235,CANVAS_HEIGHT/2-25);
                else if(gameState=="win")
                 canvas.fillText("Level Complete!",CANVAS_WIDTH/2-310,CANVAS_HEIGHT/2-25);
                canvas.restore();
@@ -1622,18 +1674,27 @@
                 
                 timeLeft.update();
 
-                if(crashEffects.length>=1 && crashEffects[crashEffects.length-1].counter>=FPS*0.6)
+                if(crashEffects.length>=1 && crashEffects[crashEffects.length-1].counter>=FPS*0.6){
                   gameState="lose";
+                    ambulance.pause();
+                   fire.pause();
+                }
                
-               else if(timeLeft.number==0) gameState="lose";
+               else if(timeLeft.number==0){
+                gameState="lose";
+                  ambulance.pause();
+                   fire.pause();
+              }
                else if(carsLeft.number==0) {
                    gameState="win";
+                   ambulance.pause();
+                   fire.pause();
                    for(var i=0;i<gameRecord.length;i++){
                       if(gameRecord[i]["name"]==username){
+                           if(!gameRecord[i]["level2"] || gameRecord[i]["level2"]>(TOTALTIME-timeLeft.number)/FPS){
                            gameRecord[i]["level2"]=(TOTALTIME-timeLeft.number)/FPS;
                            gameRecord[i]["level2"]=gameRecord[i]["level2"].toFixed(2);
-                           gameRecord[i]["total"]=(parseFloat(gameRecord[i]["level1"])+parseFloat(gameRecord[i]["level2"])).toFixed(2);
-                           //console.info(gameRecord[0]["total"]);
+                           gameRecord[i]["total"]=(parseFloat(gameRecord[i]["level1"])+parseFloat(gameRecord[i]["level2"])).toFixed(2);}
                            break;
                       }
                     }
